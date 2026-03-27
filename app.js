@@ -51,14 +51,14 @@
       scoreBaseNames: [
         "Legends Never Die no Voice",
         "Legends Never Die No Voice",
-        "Legends Never Die no Music",
-        "Legends Never Die No Music"
+        "Legends Never Die No Voice",
+        "Legends Never Die No Voice"
       ],
       audioBaseNames: [
         "Legends Never Die no Voice",
         "Legends Never Die No Voice",
-        "Legends Never Die no Music",
-        "Legends Never Die No Music"
+        "Legends Never Die No Voice",
+        "Legends Never Die No Voice"
       ]
     },
     {
