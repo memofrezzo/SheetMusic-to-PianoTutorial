@@ -1,0 +1,131 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Piano Roll Local</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <h1>Piano Roll Local (tipo Synthesia)</h1>
+      <p>Carga una partitura y opcionalmente un audio externo para sincronizar la visualizacion.</p>
+    </header>
+
+    <section class="controls">
+      <label class="file-field">
+        <span>Partitura principal (.musicxml/.xml, opcional .mid/.midi)</span>
+        <input id="scoreFile" type="file" accept=".musicxml,.xml,.mid,.midi" />
+      </label>
+
+      <label class="file-field">
+        <span>Audio de acompanamiento (.mp3/.wav) - opcional</span>
+        <input id="audioFile" type="file" accept=".mp3,.wav,audio/*" />
+      </label>
+
+      <section class="default-melodies" aria-label="Melodias por defecto">
+        <div class="default-melodies-head">
+          <span class="default-melodies-title">Melodias por defecto</span>
+          <small>Click para cargar partitura + audio automaticamente</small>
+        </div>
+        <div id="defaultMelodyList" class="default-melody-list"></div>
+      </section>
+
+      <div class="transport">
+        <button id="playBtn" disabled>Reproducir</button>
+        <button id="pauseBtn" disabled>Pausar</button>
+        <button id="resetBtn" disabled>Reiniciar</button>
+        <button id="fullscreenBtn" type="button">Pantalla completa</button>
+      </div>
+
+      <div class="playback-tools">
+        <label class="inline-field speed-field">
+          <span>Velocidad</span>
+          <select id="speedSelect">
+            <option value="0.25">0.25x</option>
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1.0x</option>
+            <option value="2">2.0x</option>
+          </select>
+        </label>
+
+        <label class="inline-field jump-field">
+          <span>Ir a tiempo (mm:ss)</span>
+          <div class="seek-input-wrap">
+            <input id="seekInput" type="text" placeholder="2:15" />
+            <button id="seekBtn" disabled>Ir</button>
+          </div>
+        </label>
+      </div>
+
+      <label class="seekbar-field">
+        <span>Posicion de reproduccion</span>
+        <input id="seekBar" type="range" min="0" max="0" step="0.01" value="0" disabled />
+      </label>
+
+      <label class="offset-field">
+        <span>Offset visual (s): positivo = notas mas tarde</span>
+        <input id="offsetInput" type="number" step="0.01" min="-10" max="10" value="0" />
+      </label>
+    </section>
+
+    <section class="status">
+      <div id="statusText">Carga una partitura para comenzar.</div>
+      <div id="metaText"></div>
+      <div id="timeText">Tiempo: 00:00 / 00:00</div>
+    </section>
+
+    <section class="stage-wrap">
+      <canvas id="rollCanvas" aria-label="Visualizador de notas cayendo"></canvas>
+      <div id="fsPanel" class="fs-panel" style="--fs-panel-scale: 1;">
+        <div class="fs-panel-main">
+          <div class="fs-top-row">
+            <div id="fsTimeText" class="fs-time-text">00:00 / 00:00</div>
+            <button id="fsExitBtn" type="button">Salir</button>
+          </div>
+
+          <label class="fs-progress-wrap">
+            <span>Progreso</span>
+            <input id="fsSeekBar" type="range" min="0" max="0" step="0.01" value="0" disabled />
+          </label>
+
+          <div class="fs-bottom-row">
+            <div class="fs-transport">
+              <button id="fsPlayPauseBtn" disabled>Reproducir</button>
+              <button id="fsResetBtn" disabled>Reiniciar</button>
+            </div>
+
+            <label class="fs-speed-label">
+              <span>Velocidad</span>
+              <select id="fsSpeedSelect" disabled>
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>1.0x</option>
+                <option value="2">2.0x</option>
+              </select>
+            </label>
+
+            <div class="fs-panel-actions">
+              <button id="fsSizeDownBtn" type="button">A-</button>
+              <button id="fsSizeUpBtn" type="button">A+</button>
+              <button id="fsPanelHideBtn" type="button">Ocultar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button id="fsPanelShowBtn" class="fs-show-btn" type="button" hidden>Mostrar controles</button>
+    </section>
+
+    <footer class="help">
+      <strong>Tip:</strong> si queres sincronizacion casi perfecta, exporta el audio desde el mismo proyecto de notacion y usa el offset solo para ajuste fino.
+      <br />
+      <strong>Atajos:</strong> Espacio (play/pausa), Flecha Izquierda (-5s), Flecha Derecha (+5s).
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
