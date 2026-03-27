@@ -12,6 +12,7 @@ Aplicacion web local para visualizar notas cayendo sobre un piano virtual.
 - Resalta teclas activas con el mismo color de la nota que esta cayendo.
 - Permite reproducir un audio externo (`.mp3`/`.wav`) sincronizado con la animacion.
 - Incluye **Melodias por defecto** que cargan automaticamente partitura + audio al hacer click (`Legends Never Die no Voice`, `Legends Never Die Voice`, `Fotografia La Plata`, `Epic Piano Music`).
+- En hosting online, nombres y rutas deben coincidir exactamente (en muchos servidores Linux, mayusculas/minusculas importan).
 - Incluye controles: **Reproducir**, **Pausar**, **Reiniciar** y carga de archivos.
 - Permite elegir velocidad: `0.25x`, `0.5x`, `0.75x`, `1.0x`, `2.0x`.
 - Permite ir a un momento exacto (`mm:ss`) y mover la posicion con una barra de tiempo.

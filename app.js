@@ -40,16 +40,26 @@
   const FS_PANEL_MIN_SCALE = 0.8;
   const FS_PANEL_MAX_SCALE = 1.8;
   const FS_PANEL_SCALE_STEP = 0.1;
-  const PRELOADED_SCORE_DIR = "Partituras";
-  const PRELOADED_AUDIO_DIR = "Musicas";
+  const PRELOADED_SCORE_DIRS = ["Partituras", "partituras"];
+  const PRELOADED_AUDIO_DIRS = ["Musicas", "musicas"];
   // Para agregar nuevas melodias por defecto, suma una entrada aca
   // y coloca ambos archivos en Partituras/ y Musicas/ con el mismo nombre base.
   const DEFAULT_MELODIES = [
     {
       id: "legends-never-die-no-voice",
       label: "Legends Never Die no Voice",
-      scoreBaseNames: ["Legends Never Die no Voice", "Legends Never Die No Voice"],
-      audioBaseNames: ["Legends Never Die no Voice", "Legends Never Die No Voice"]
+      scoreBaseNames: [
+        "Legends Never Die no Voice",
+        "Legends Never Die No Voice",
+        "Legends Never Die no Music",
+        "Legends Never Die No Music"
+      ],
+      audioBaseNames: [
+        "Legends Never Die no Voice",
+        "Legends Never Die No Voice",
+        "Legends Never Die no Music",
+        "Legends Never Die No Music"
+      ]
     },
     {
       id: "legends-never-die-voice",
@@ -60,8 +70,22 @@
     {
       id: "fotografia-la-plata",
       label: "Fotografia La Plata",
-      scoreBaseNames: ["Fotografia La Plata", "Fotografia la plata"],
-      audioBaseNames: ["Fotografia La Plata", "Fotografia la plata"]
+      scoreBaseNames: [
+        "Fotografia La Plata",
+        "Fotografia la plata",
+        "Fotografia La plata",
+        "fotografia la plata",
+        "Fotografía La Plata",
+        "Fotografía la plata"
+      ],
+      audioBaseNames: [
+        "Fotografia La Plata",
+        "Fotografia la plata",
+        "Fotografia La plata",
+        "fotografia la plata",
+        "Fotografía La Plata",
+        "Fotografía la plata"
+      ]
     },
     {
       id: "epic-piano-music",
@@ -248,25 +272,31 @@
     setDefaultMelodyLoading(false);
   }
 
-  function buildPreloadedFileCandidates(directory, baseNames, extensions) {
+  function buildPreloadedFileCandidates(directories, baseNames, extensions) {
+    const directoryList = Array.isArray(directories) ? directories : [directories];
     const candidates = [];
     const seen = new Set();
-    for (const baseName of baseNames) {
-      if (typeof baseName !== "string" || !baseName.trim()) {
+    for (const directory of directoryList) {
+      if (typeof directory !== "string" || !directory.trim()) {
         continue;
       }
-      for (const extension of extensions) {
-        const safeExt = extension.startsWith(".") ? extension : `.${extension}`;
-        const fileName = `${baseName}${safeExt}`;
-        const dedupeKey = `${directory}/${fileName}`.toLowerCase();
-        if (seen.has(dedupeKey)) {
+      for (const baseName of baseNames) {
+        if (typeof baseName !== "string" || !baseName.trim()) {
           continue;
         }
-        seen.add(dedupeKey);
-        candidates.push({
-          url: `${directory}/${encodeURIComponent(baseName)}${safeExt}`,
-          fileName
-        });
+        for (const extension of extensions) {
+          const safeExt = extension.startsWith(".") ? extension : `.${extension}`;
+          const fileName = `${baseName}${safeExt}`;
+          const dedupeKey = `${directory}/${fileName}`.toLowerCase();
+          if (seen.has(dedupeKey)) {
+            continue;
+          }
+          seen.add(dedupeKey);
+          candidates.push({
+            url: `${directory}/${encodeURIComponent(baseName)}${safeExt}`,
+            fileName
+          });
+        }
       }
     }
     return candidates;
@@ -325,15 +355,15 @@
     setStatus(`Cargando melodia por defecto: ${melody.label} ...`);
 
     try {
-      const scoreCandidates = buildPreloadedFileCandidates(PRELOADED_SCORE_DIR, melody.scoreBaseNames, [".musicxml", ".xml"]);
-      const audioCandidates = buildPreloadedFileCandidates(PRELOADED_AUDIO_DIR, melody.audioBaseNames, [".mp3", ".wav"]);
+      const scoreCandidates = buildPreloadedFileCandidates(PRELOADED_SCORE_DIRS, melody.scoreBaseNames, [".musicxml", ".xml", ".MUSICXML", ".XML"]);
+      const audioCandidates = buildPreloadedFileCandidates(PRELOADED_AUDIO_DIRS, melody.audioBaseNames, [".mp3", ".wav", ".MP3", ".WAV"]);
 
       const scoreFile = await fetchFirstAvailableFile(scoreCandidates);
       if (state.defaultMelodyLoadSeq !== requestId) {
         return;
       }
       if (!scoreFile) {
-        throw new Error(`No se encontro la partitura de "${melody.label}" en ${PRELOADED_SCORE_DIR}/.`);
+        throw new Error(`No se encontro la partitura de "${melody.label}" en Partituras/ (o partituras/) con el nombre esperado.`);
       }
 
       await loadScoreFile(scoreFile);
