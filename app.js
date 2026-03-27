@@ -47,7 +47,7 @@
   const DEFAULT_MELODIES = [
     {
       id: "legends-never-die-no-voice",
-      label: "Legends Never Die no Voice",
+      label: "Legends Never Die No Voice",
       scoreBaseNames: [
         "Legends Never Die no Voice",
         "Legends Never Die No Voice",
@@ -322,14 +322,54 @@
     }
   }
 
-  async function fetchFirstAvailableFile(candidates) {
+  function looksLikeHtml(text) {
+    if (typeof text !== "string") {
+      return false;
+    }
+    const compact = text.trim().toLowerCase();
+    return /<\s*!doctype\s+html|<\s*html\b|<\s*head\b|<\s*body\b/.test(compact);
+  }
+
+  function looksLikeMusicXml(text) {
+    if (typeof text !== "string") {
+      return false;
+    }
+    const compact = text.trim().toLowerCase();
+    return /<\s*score-partwise\b|<\s*score-timewise\b/.test(compact);
+  }
+
+  async function fetchFirstAvailableFile(candidates, expectedKind = "generic") {
     for (const candidate of candidates) {
       try {
         const response = await fetch(candidate.url, { cache: "no-store" });
         if (!response.ok) {
           continue;
         }
+        const contentType = (response.headers.get("content-type") || "").toLowerCase();
+        if (contentType.includes("text/html")) {
+          // Muchos hostings devuelven index.html con 200 para rutas inexistentes.
+          continue;
+        }
+
         const blob = await response.blob();
+
+        if (expectedKind === "score") {
+          const head = await blob.slice(0, 4096).text().catch(() => "");
+          if (looksLikeHtml(head)) {
+            continue;
+          }
+          if (head && !looksLikeMusicXml(head)) {
+            continue;
+          }
+        } else if (expectedKind === "audio") {
+          if (!contentType.startsWith("audio/")) {
+            const head = await blob.slice(0, 512).text().catch(() => "");
+            if (looksLikeHtml(head)) {
+              continue;
+            }
+          }
+        }
+
         return createFileLikeFromBlob(blob, candidate.fileName);
       } catch (_error) {
         // Probamos el siguiente candidato.
@@ -358,7 +398,7 @@
       const scoreCandidates = buildPreloadedFileCandidates(PRELOADED_SCORE_DIRS, melody.scoreBaseNames, [".musicxml", ".xml", ".MUSICXML", ".XML"]);
       const audioCandidates = buildPreloadedFileCandidates(PRELOADED_AUDIO_DIRS, melody.audioBaseNames, [".mp3", ".wav", ".MP3", ".WAV"]);
 
-      const scoreFile = await fetchFirstAvailableFile(scoreCandidates);
+      const scoreFile = await fetchFirstAvailableFile(scoreCandidates, "score");
       if (state.defaultMelodyLoadSeq !== requestId) {
         return;
       }
@@ -371,7 +411,7 @@
         return;
       }
 
-      const audioFile = await fetchFirstAvailableFile(audioCandidates);
+      const audioFile = await fetchFirstAvailableFile(audioCandidates, "audio");
       if (state.defaultMelodyLoadSeq !== requestId) {
         return;
       }
