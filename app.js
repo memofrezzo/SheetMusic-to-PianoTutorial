@@ -378,6 +378,18 @@
     return null;
   }
 
+  function isValidPreloadedAudioFile(fileLike) {
+    if (!fileLike) {
+      return false;
+    }
+    const size = Number(fileLike.size);
+    if (!Number.isFinite(size)) {
+      return true;
+    }
+    // Evita aceptar "audios" claramente rotos (ej: archivo de 2 bytes en deploy).
+    return size >= 1024;
+  }
+
   async function loadDefaultMelody(melody) {
     if (!melody) {
       return;
@@ -416,9 +428,12 @@
         return;
       }
 
-      if (audioFile) {
+      if (audioFile && isValidPreloadedAudioFile(audioFile)) {
         loadAudioFile(audioFile);
         setStatus(`Partitura cargada: ${melody.label}. Cargando audio...`, "ok");
+      } else if (audioFile) {
+        loadAudioFile(null, { silent: true });
+        setStatus(`Partitura cargada, pero el audio de "${melody.label}" parece danado o vacio (tamano muy pequeno).`, "error");
       } else {
         loadAudioFile(null, { silent: true });
         setStatus(`Partitura cargada, pero no se encontro audio .mp3/.wav para "${melody.label}".`, "error");
