@@ -1,0 +1,28 @@
+{
+  "melodies": [
+    {
+      "id": "legends-never-die-no-voice",
+      "label": "Legends Never Die No Voice",
+      "scorePath": "Partituras/Legends Never Die No Voice.musicxml",
+      "audioPath": "Musicas/Legends Never Die No Voice.mp3"
+    },
+    {
+      "id": "legends-never-die-voice",
+      "label": "Legends Never Die Voice",
+      "scorePath": "Partituras/Legends Never Die.musicxml",
+      "audioPath": "Musicas/Legends Never Die.mp3"
+    },
+    {
+      "id": "fotografia-la-plata",
+      "label": "Fotografia La Plata",
+      "scorePath": "Partituras/Fotografia La Plata.musicxml",
+      "audioPath": "Musicas/Fotografia La Plata.mp3"
+    },
+    {
+      "id": "epic-piano-music",
+      "label": "Epic Piano Music",
+      "scorePath": "Partituras/Epic Piano Music.musicxml",
+      "audioPath": "Musicas/Epic Piano Music.mp3"
+    }
+  ]
+}

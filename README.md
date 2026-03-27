@@ -13,7 +13,7 @@ https://memofrezzo.github.io/SheetMusic-to-PianoTutorial/
 - Resalta teclas activas con el mismo color de la nota que esta cayendo.
 - Permite reproducir un audio externo (`.mp3`/`.wav`) sincronizado con la animacion.
 - Incluye **Melodias por defecto** que cargan automaticamente partitura + audio al hacer click (`Legends Never Die no Voice`, `Legends Never Die Voice`, `Fotografia La Plata`, `Epic Piano Music`).
-- En hosting online, nombres y rutas deben coincidir exactamente (en muchos servidores Linux, mayusculas/minusculas importan).
+- Las melodias por defecto se leen desde `melodias.json` (rutas explicitas, ideal para evitar problemas de mayusculas/minusculas en web).
 - Incluye controles: **Reproducir**, **Pausar**, **Reiniciar** y carga de archivos.
 - Permite elegir velocidad: `0.25x`, `0.5x`, `0.75x`, `1.0x`, `2.0x`.
 - Permite ir a un momento exacto (`mm:ss`) y mover la posicion con una barra de tiempo.
@@ -85,5 +85,14 @@ Importante: para usar **Melodias por defecto** esta opcion es la recomendada.
 - `index.html`: interfaz
 - `styles.css`: estilos
 - `app.js`: parseo MusicXML/MIDI, sincronizacion y render en canvas
+- `melodias.json`: lista/rutas de las melodias por defecto
 - `run_local_server.bat`: lanza servidor local en puerto 8080
+
+## Como agregar o editar melodias por defecto
+1. Abri `melodias.json`.
+2. En `melodies`, agrega/edita objetos con:
+- `label`
+- `scorePath` (ej: `Partituras/Mi Tema.musicxml`)
+- `audioPath` (ej: `Musicas/Mi Tema.mp3`)
+3. Subi tambien esos archivos al repo/hosting con exactamente esas rutas.
 

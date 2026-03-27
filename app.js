@@ -40,63 +40,38 @@
   const FS_PANEL_MIN_SCALE = 0.8;
   const FS_PANEL_MAX_SCALE = 1.8;
   const FS_PANEL_SCALE_STEP = 0.1;
-  const PRELOADED_SCORE_DIRS = ["Partituras", "partituras"];
-  const PRELOADED_AUDIO_DIRS = ["Musicas", "musicas"];
-  // Para agregar nuevas melodias por defecto, suma una entrada aca
-  // y coloca ambos archivos en Partituras/ y Musicas/ con el mismo nombre base.
+  const MELODIES_MANIFEST_URL = "melodias.json?v=20260327-1";
+  // Fallback si melodias.json no existe o no carga.
   const DEFAULT_MELODIES = [
     {
       id: "legends-never-die-no-voice",
       label: "Legends Never Die No Voice",
-      scoreBaseNames: [
-        "Legends Never Die no Voice",
-        "Legends Never Die No Voice",
-        "Legends Never Die No Voice",
-        "Legends Never Die No Voice"
-      ],
-      audioBaseNames: [
-        "Legends Never Die no Voice",
-        "Legends Never Die No Voice",
-        "Legends Never Die No Voice",
-        "Legends Never Die No Voice"
-      ]
+      scorePaths: ["Partituras/Legends Never Die No Voice.musicxml"],
+      audioPaths: ["Musicas/Legends Never Die No Voice.mp3"]
     },
     {
       id: "legends-never-die-voice",
       label: "Legends Never Die Voice",
-      scoreBaseNames: ["Legends Never Die Voice", "Legends Never Die"],
-      audioBaseNames: ["Legends Never Die Voice", "Legends Never Die"]
+      scorePaths: ["Partituras/Legends Never Die.musicxml"],
+      audioPaths: ["Musicas/Legends Never Die.mp3"]
     },
     {
       id: "fotografia-la-plata",
       label: "Fotografia La Plata",
-      scoreBaseNames: [
-        "Fotografia La Plata",
-        "Fotografia la plata",
-        "Fotografia La plata",
-        "fotografia la plata",
-        "Fotografía La Plata",
-        "Fotografía la plata"
-      ],
-      audioBaseNames: [
-        "Fotografia La Plata",
-        "Fotografia la plata",
-        "Fotografia La plata",
-        "fotografia la plata",
-        "Fotografía La Plata",
-        "Fotografía la plata"
-      ]
+      scorePaths: ["Partituras/Fotografia La Plata.musicxml"],
+      audioPaths: ["Musicas/Fotografia La Plata.mp3"]
     },
     {
       id: "epic-piano-music",
       label: "Epic Piano Music",
-      scoreBaseNames: ["Epic Piano Music"],
-      audioBaseNames: ["Epic Piano Music"]
+      scorePaths: ["Partituras/Epic Piano Music.musicxml"],
+      audioPaths: ["Musicas/Epic Piano Music.mp3"]
     }
   ];
   const blackKeyColorCache = new Map();
 
   const state = {
+    defaultMelodies: DEFAULT_MELODIES.slice(),
     notes: [],
     totalDuration: 0,
     playhead: 0,
@@ -272,32 +247,130 @@
     setDefaultMelodyLoading(false);
   }
 
-  function buildPreloadedFileCandidates(directories, baseNames, extensions) {
-    const directoryList = Array.isArray(directories) ? directories : [directories];
-    const candidates = [];
-    const seen = new Set();
-    for (const directory of directoryList) {
-      if (typeof directory !== "string" || !directory.trim()) {
+  function slugifyMelodyId(label) {
+    return String(label || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || `melody-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function normalizePathValue(value) {
+    if (typeof value !== "string") {
+      return "";
+    }
+    return value.trim().replace(/\\/g, "/").replace(/^\.\/+/, "");
+  }
+
+  function normalizeManifestMelodies(rawMelodies) {
+    if (!Array.isArray(rawMelodies)) {
+      return [];
+    }
+
+    const normalized = [];
+    const usedIds = new Set();
+
+    for (const entry of rawMelodies) {
+      if (!entry || typeof entry !== "object") {
         continue;
       }
-      for (const baseName of baseNames) {
-        if (typeof baseName !== "string" || !baseName.trim()) {
-          continue;
-        }
-        for (const extension of extensions) {
-          const safeExt = extension.startsWith(".") ? extension : `.${extension}`;
-          const fileName = `${baseName}${safeExt}`;
-          const dedupeKey = `${directory}/${fileName}`.toLowerCase();
-          if (seen.has(dedupeKey)) {
-            continue;
-          }
-          seen.add(dedupeKey);
-          candidates.push({
-            url: `${directory}/${encodeURIComponent(baseName)}${safeExt}`,
-            fileName
-          });
+
+      const label = String(entry.label || "").trim();
+      if (!label.length) {
+        continue;
+      }
+
+      let id = String(entry.id || "").trim() || slugifyMelodyId(label);
+      while (usedIds.has(id)) {
+        id = `${id}-alt`;
+      }
+      usedIds.add(id);
+
+      const scorePaths = [];
+      const audioPaths = [];
+
+      const scoreSources = []
+        .concat(entry.scorePath || [])
+        .concat(entry.score || [])
+        .concat(entry.scorePaths || []);
+      const audioSources = []
+        .concat(entry.audioPath || [])
+        .concat(entry.audio || [])
+        .concat(entry.audioPaths || []);
+
+      for (const pathValue of scoreSources) {
+        const normalizedPath = normalizePathValue(pathValue);
+        if (normalizedPath.length && !scorePaths.includes(normalizedPath)) {
+          scorePaths.push(normalizedPath);
         }
       }
+      for (const pathValue of audioSources) {
+        const normalizedPath = normalizePathValue(pathValue);
+        if (normalizedPath.length && !audioPaths.includes(normalizedPath)) {
+          audioPaths.push(normalizedPath);
+        }
+      }
+
+      if (!scorePaths.length) {
+        continue;
+      }
+
+      normalized.push({
+        id,
+        label,
+        scorePaths,
+        audioPaths
+      });
+    }
+
+    return normalized;
+  }
+
+  async function loadDefaultMelodiesManifest() {
+    if (window.location.protocol === "file:") {
+      return;
+    }
+
+    try {
+      const response = await fetch(MELODIES_MANIFEST_URL, { cache: "no-store" });
+      if (!response.ok) {
+        return;
+      }
+      const data = await response.json();
+      const rawList = Array.isArray(data) ? data : data && Array.isArray(data.melodies) ? data.melodies : [];
+      const normalized = normalizeManifestMelodies(rawList);
+      if (!normalized.length) {
+        return;
+      }
+      state.defaultMelodies = normalized;
+      renderDefaultMelodyButtons();
+    } catch (_error) {
+      // Si falla manifest, seguimos con fallback interno.
+    }
+  }
+
+  function buildPreloadedPathCandidates(paths) {
+    const candidates = [];
+    const seen = new Set();
+
+    const pathList = Array.isArray(paths) ? paths : [paths];
+    for (const rawPath of pathList) {
+      const normalizedPath = normalizePathValue(rawPath);
+      if (!normalizedPath.length) {
+        continue;
+      }
+      const dedupeKey = normalizedPath;
+      if (seen.has(dedupeKey)) {
+        continue;
+      }
+      seen.add(dedupeKey);
+
+      const url = encodeURI(normalizedPath);
+      const fileName = decodeURIComponent(normalizedPath.split("/").pop() || "archivo");
+      candidates.push({
+        url,
+        fileName
+      });
     }
     return candidates;
   }
@@ -407,15 +480,15 @@
     setStatus(`Cargando melodia por defecto: ${melody.label} ...`);
 
     try {
-      const scoreCandidates = buildPreloadedFileCandidates(PRELOADED_SCORE_DIRS, melody.scoreBaseNames, [".musicxml", ".xml", ".MUSICXML", ".XML"]);
-      const audioCandidates = buildPreloadedFileCandidates(PRELOADED_AUDIO_DIRS, melody.audioBaseNames, [".mp3", ".wav", ".MP3", ".WAV"]);
+      const scoreCandidates = buildPreloadedPathCandidates(melody.scorePaths || []);
+      const audioCandidates = buildPreloadedPathCandidates(melody.audioPaths || []);
 
       const scoreFile = await fetchFirstAvailableFile(scoreCandidates, "score");
       if (state.defaultMelodyLoadSeq !== requestId) {
         return;
       }
       if (!scoreFile) {
-        throw new Error(`No se encontro la partitura de "${melody.label}" en Partituras/ (o partituras/) con el nombre esperado.`);
+        throw new Error(`No se encontro la partitura de "${melody.label}" en la ruta indicada en melodias.json.`);
       }
 
       await loadScoreFile(scoreFile);
@@ -436,7 +509,7 @@
         setStatus(`Partitura cargada, pero el audio de "${melody.label}" parece danado o vacio (tamano muy pequeno).`, "error");
       } else {
         loadAudioFile(null, { silent: true });
-        setStatus(`Partitura cargada, pero no se encontro audio .mp3/.wav para "${melody.label}".`, "error");
+        setStatus(`Partitura cargada, pero no se encontro audio para "${melody.label}" en melodias.json.`, "error");
       }
 
       if (ui.scoreFile) {
@@ -458,7 +531,8 @@
     }
     ui.defaultMelodyList.innerHTML = "";
     const fragment = document.createDocumentFragment();
-    for (const melody of DEFAULT_MELODIES) {
+    const melodies = Array.isArray(state.defaultMelodies) ? state.defaultMelodies : [];
+    for (const melody of melodies) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "default-melody-btn";
@@ -1961,6 +2035,7 @@
     refreshTransportUi(true);
     updateFullscreenState();
     renderDefaultMelodyButtons();
+    loadDefaultMelodiesManifest();
 
     ui.offsetInput.addEventListener("change", () => {
       const value = parseNumber(ui.offsetInput.value, 0);
