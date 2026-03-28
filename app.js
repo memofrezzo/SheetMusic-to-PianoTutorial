@@ -40,6 +40,11 @@
   const FS_PANEL_MIN_SCALE = 0.8;
   const FS_PANEL_MAX_SCALE = 1.8;
   const FS_PANEL_SCALE_STEP = 0.1;
+  const DESKTOP_DOWNLOADS = {
+    windows: "https://github.com/memofrezzo/SheetMusic-to-PianoTutorial/releases/latest/download/PianoRollLocal-Windows-Setup.exe",
+    mac: "https://github.com/memofrezzo/SheetMusic-to-PianoTutorial/releases/latest/download/PianoRollLocal-macOS.dmg",
+    releases: "https://github.com/memofrezzo/SheetMusic-to-PianoTutorial/releases/latest"
+  };
   const MELODIES_MANIFEST_URL = "melodias.json?v=20260327-1";
   // Fallback si melodias.json no existe o no carga.
   const DEFAULT_MELODIES = [
@@ -126,6 +131,11 @@
     statusText: document.getElementById("statusText"),
     metaText: document.getElementById("metaText"),
     timeText: document.getElementById("timeText"),
+    downloadWindowsBtn: document.getElementById("downloadWindowsBtn"),
+    downloadMacBtn: document.getElementById("downloadMacBtn"),
+    desktopDownloadHint: document.getElementById("desktopDownloadHint"),
+    donationAliasText: document.getElementById("donationAliasText"),
+    copyAliasBtn: document.getElementById("copyAliasBtn"),
     defaultMelodyList: document.getElementById("defaultMelodyList"),
     canvas: document.getElementById("rollCanvas"),
     stageWrap: document.querySelector(".stage-wrap"),
@@ -766,6 +776,56 @@
     }
     const tag = (element.tagName || "").toLowerCase();
     return tag === "input" || tag === "textarea" || tag === "select" || tag === "button" || element.isContentEditable;
+  }
+
+  async function copyDonationAlias() {
+    const alias = (ui.donationAliasText && ui.donationAliasText.textContent ? ui.donationAliasText.textContent : "").trim();
+    if (!alias.length) {
+      return;
+    }
+
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        await navigator.clipboard.writeText(alias);
+      } else {
+        const temp = document.createElement("textarea");
+        temp.value = alias;
+        temp.setAttribute("readonly", "readonly");
+        temp.style.position = "fixed";
+        temp.style.opacity = "0";
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        document.body.removeChild(temp);
+      }
+      setStatus(`Alias copiado: ${alias}`, "ok");
+    } catch (_error) {
+      setStatus("No se pudo copiar el alias automaticamente. Copialo manualmente.", "error");
+    }
+  }
+
+  function setupDesktopDownloadLinks() {
+    if (ui.downloadWindowsBtn) {
+      ui.downloadWindowsBtn.href = DESKTOP_DOWNLOADS.windows;
+    }
+    if (ui.downloadMacBtn) {
+      ui.downloadMacBtn.href = DESKTOP_DOWNLOADS.mac;
+    }
+
+    if (ui.desktopDownloadHint) {
+      ui.desktopDownloadHint.textContent = `Si algun boton no descarga, entra a: ${DESKTOP_DOWNLOADS.releases}`;
+    }
+
+    const platform = (navigator.platform || "").toLowerCase();
+    const isMac = platform.includes("mac");
+    const isWindows = platform.includes("win");
+
+    if (ui.downloadWindowsBtn) {
+      ui.downloadWindowsBtn.classList.toggle("is-recommended", isWindows);
+    }
+    if (ui.downloadMacBtn) {
+      ui.downloadMacBtn.classList.toggle("is-recommended", isMac);
+    }
   }
 
   function localTagName(node) {
@@ -2036,6 +2096,13 @@
     updateFullscreenState();
     renderDefaultMelodyButtons();
     loadDefaultMelodiesManifest();
+    setupDesktopDownloadLinks();
+
+    if (ui.copyAliasBtn) {
+      ui.copyAliasBtn.addEventListener("click", () => {
+        copyDonationAlias();
+      });
+    }
 
     ui.offsetInput.addEventListener("change", () => {
       const value = parseNumber(ui.offsetInput.value, 0);
@@ -2192,10 +2259,12 @@
 
     window.addEventListener("resize", onResize);
 
-    const resizeObserver = new ResizeObserver(() => {
-      onResize();
-    });
-    resizeObserver.observe(ui.stageWrap);
+    if (typeof ResizeObserver === "function") {
+      const resizeObserver = new ResizeObserver(() => {
+        onResize();
+      });
+      resizeObserver.observe(ui.stageWrap);
+    }
 
     onResize();
     requestAnimationFrame(render);

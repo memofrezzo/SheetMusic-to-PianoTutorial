@@ -1,0 +1,70 @@
+{
+  "name": "sheetmusic-to-pianotutorial",
+  "version": "1.0.0",
+  "description": "Visualizador de partitura tipo Synthesia",
+  "private": true,
+  "main": "electron-main.js",
+  "scripts": {
+    "desktop:dev": "electron .",
+    "desktop:build:win": "electron-builder --win --publish never",
+    "desktop:build:mac": "electron-builder --mac --publish never",
+    "desktop:release": "electron-builder --win --mac --publish always"
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.alaingerfauo.pianorolllocal",
+    "productName": "PianoRollLocal",
+    "directories": {
+      "output": "dist-desktop"
+    },
+    "files": [
+      "electron-main.js",
+      "index.html",
+      "styles.css",
+      "app.js",
+      "melodias.json",
+      "Musicas/**/*",
+      "Partituras/**/*"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "PianoRollLocal-Windows-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "PianoRollLocal-macOS.${ext}",
+      "category": "public.app-category.music"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "memofrezzo",
+        "repo": "SheetMusic-to-PianoTutorial"
+      }
+    ]
+  }
+}

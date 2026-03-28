@@ -3,6 +3,11 @@
 Aplicacion web local para visualizar notas cayendo sobre un piano virtual.
 https://memofrezzo.github.io/SheetMusic-to-PianoTutorial/
 
+## Uso en web (Windows y macOS)
+- La web publicada funciona en navegadores modernos de Windows y macOS (Chrome, Edge, Safari).
+- URL publica: `https://memofrezzo.github.io/SheetMusic-to-PianoTutorial/`
+- No hace falta instalar nada para usarla desde navegador.
+
 ## Que hace
 - Carga partitura en **MusicXML** (`.musicxml` o `.xml`) como formato principal.
 - Acepta **MIDI** (`.mid`/`.midi`) como formato secundario.
@@ -40,7 +45,7 @@ En MuseScore, por ejemplo:
 
 Formato secundario valido: `MIDI (.mid)`.
 
-## Instalacion y ejecucion en Windows
+## Instalacion y ejecucion en Windows / macOS
 
 ### Opcion mas simple (sin instalar nada)
 1. Abre `index.html` en Chrome o Edge.
@@ -71,6 +76,60 @@ run_local_server.bat
 Nota: ese lanzador requiere Python instalado.
 Importante: para usar **Melodias por defecto** esta opcion es la recomendada.
 
+## Ejecucion en macOS
+
+### Opcion simple (servidor local)
+1. Abri Terminal y entra en la carpeta del proyecto.
+2. Ejecuta:
+
+```bash
+python3 -m http.server 8080
+```
+
+3. Abri en el navegador:
+
+```text
+http://localhost:8080
+```
+
+### Lanzador para macOS
+Tambien tenes:
+
+```text
+run_local_server_mac.command
+```
+
+Si no abre por permisos, en Terminal ejecuta una sola vez:
+
+```bash
+chmod +x run_local_server_mac.command
+```
+
+## Descarga de app de escritorio
+- Desde la web aparecen los botones:
+- `Descargar para Windows`
+- `Descargar para macOS`
+- Esos botones apuntan al ultimo release publicado en GitHub.
+- Si no hay release todavia, primero hay que publicar uno (seccion siguiente).
+
+## Publicar instaladores de escritorio (mantenedor)
+1. Instala dependencias:
+
+```bash
+npm install
+```
+
+2. Crea y sube un tag de release:
+
+```bash
+git tag desktop-v1.0.0
+git push origin desktop-v1.0.0
+```
+
+3. GitHub Actions ejecuta `.github/workflows/desktop-release.yml` y publica:
+- `PianoRollLocal-Windows-Setup.exe`
+- `PianoRollLocal-macOS.dmg`
+
 ## Uso
 1. Carga la partitura (`.musicxml`/`.xml`, o `.mid`/`.midi`).
 2. O usa la seccion **Melodias por defecto** para cargar automaticamente score + audio desde `Partituras/<nombre>.musicxml` y `Musicas/<nombre>.mp3`.
@@ -87,6 +146,10 @@ Importante: para usar **Melodias por defecto** esta opcion es la recomendada.
 - `app.js`: parseo MusicXML/MIDI, sincronizacion y render en canvas
 - `melodias.json`: lista/rutas de las melodias por defecto
 - `run_local_server.bat`: lanza servidor local en puerto 8080
+- `run_local_server_mac.command`: lanzador de servidor local para macOS
+- `electron-main.js`: entrada de la app de escritorio (Electron)
+- `package.json`: scripts y configuracion de build de escritorio
+- `.github/workflows/desktop-release.yml`: build y publicacion de instaladores en releases
 
 ## Como agregar o editar melodias por defecto
 1. Abri `melodias.json`.

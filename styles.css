@@ -197,6 +197,129 @@ button:disabled {
   color: var(--accent);
 }
 
+.donation-card {
+  margin-top: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(140deg, rgba(36, 52, 78, 0.9) 0%, rgba(22, 37, 57, 0.94) 100%);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.26);
+}
+
+.donation-message {
+  margin: 0;
+  font-size: 0.94rem;
+  color: #ebf3ff;
+  line-height: 1.35;
+}
+
+.donation-row {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.donation-pill {
+  display: grid;
+  gap: 0.1rem;
+  border-radius: 10px;
+  background: rgba(11, 16, 26, 0.62);
+  border: 1px solid rgba(158, 198, 255, 0.32);
+  padding: 0.45rem 0.62rem;
+}
+
+.donation-label {
+  font-size: 0.76rem;
+  color: #b8c7e4;
+  letter-spacing: 0.03em;
+}
+
+#donationAliasText {
+  font-size: 1rem;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.donation-copy-btn {
+  min-width: 136px;
+  background: #2b4b6b;
+  border-color: #7ec3ff;
+}
+
+.donation-copy-btn:hover:enabled {
+  background: #355f87;
+}
+
+.desktop-downloads {
+  margin-top: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(140deg, rgba(34, 41, 51, 0.92) 0%, rgba(19, 25, 35, 0.92) 100%);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+.desktop-download-title {
+  margin: 0;
+  color: #ebf3ff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.desktop-download-text {
+  margin: 0.38rem 0 0;
+  color: #bdc9dc;
+  font-size: 0.9rem;
+}
+
+.desktop-download-actions {
+  margin-top: 0.62rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.desktop-download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 190px;
+  padding: 0.6rem 0.85rem;
+  border-radius: 9px;
+  border: 1px solid #3d4f68;
+  text-decoration: none;
+  color: #ecf4ff;
+  background: #253247;
+  font-weight: 600;
+}
+
+.desktop-download-btn:hover {
+  background: #324764;
+}
+
+.desktop-download-btn.is-recommended {
+  border-color: #8ed0ff;
+  box-shadow: inset 0 0 0 1px rgba(167, 222, 255, 0.65);
+}
+
+.desktop-download-btn.windows {
+  background: #214057;
+}
+
+.desktop-download-btn.mac {
+  background: #2c3652;
+}
+
+.desktop-download-hint {
+  margin-top: 0.56rem;
+  display: block;
+  color: #96a9c6;
+  font-size: 0.8rem;
+}
+
 .stage-wrap {
   margin-top: 0.9rem;
   border: 1px solid var(--border);
@@ -339,6 +462,8 @@ body.fullscreen-active .app {
 body.fullscreen-active .topbar,
 body.fullscreen-active .controls,
 body.fullscreen-active .status,
+body.fullscreen-active .donation-card,
+body.fullscreen-active .desktop-downloads,
 body.fullscreen-active .help {
   display: none;
 }
@@ -397,6 +522,23 @@ body.fullscreen-active .fs-show-btn.is-visible,
 
   .playback-tools {
     grid-template-columns: 1fr;
+  }
+
+  .donation-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .donation-copy-btn {
+    width: 100%;
+  }
+
+  .desktop-download-actions {
+    flex-direction: column;
+  }
+
+  .desktop-download-btn {
+    width: 100%;
   }
 
   #rollCanvas {
