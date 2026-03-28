@@ -19,6 +19,7 @@ https://memofrezzo.github.io/SheetMusic-to-PianoTutorial/
 - Permite reproducir un audio externo (`.mp3`/`.wav`) sincronizado con la animacion.
 - Incluye **Melodias por defecto** que cargan automaticamente partitura + audio al hacer click (`Legends Never Die no Voice`, `Legends Never Die Voice`, `Fotografia La Plata`, `Epic Piano Music`).
 - Las melodias por defecto se leen desde `melodias.json` (rutas explicitas, ideal para evitar problemas de mayusculas/minusculas en web).
+- En app de escritorio (Electron) tambien funcionan las melodias por defecto incluidas en `Musicas/` y `Partituras/`.
 - Incluye controles: **Reproducir**, **Pausar**, **Reiniciar** y carga de archivos.
 - Permite elegir velocidad: `0.25x`, `0.5x`, `0.75x`, `1.0x`, `2.0x`.
 - Permite ir a un momento exacto (`mm:ss`) y mover la posicion con una barra de tiempo.

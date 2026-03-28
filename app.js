@@ -336,13 +336,28 @@
     return normalized;
   }
 
-  async function loadDefaultMelodiesManifest() {
+  function isElectronRuntime() {
+    return typeof navigator !== "undefined" && /electron/i.test(navigator.userAgent || "");
+  }
+
+  function shouldBlockFileProtocolDefaults() {
+    return window.location.protocol === "file:" && !isElectronRuntime();
+  }
+
+  function getMelodiesManifestUrl() {
     if (window.location.protocol === "file:") {
+      return "melodias.json";
+    }
+    return MELODIES_MANIFEST_URL;
+  }
+
+  async function loadDefaultMelodiesManifest() {
+    if (shouldBlockFileProtocolDefaults()) {
       return;
     }
 
     try {
-      const response = await fetch(MELODIES_MANIFEST_URL, { cache: "no-store" });
+      const response = await fetch(getMelodiesManifestUrl(), { cache: "no-store" });
       if (!response.ok) {
         return;
       }
@@ -477,7 +492,7 @@
     if (!melody) {
       return;
     }
-    if (window.location.protocol === "file:") {
+    if (shouldBlockFileProtocolDefaults()) {
       throw new Error("Para usar melodias por defecto abre la app con servidor local (run_local_server.bat o http://localhost:8080).");
     }
 
