@@ -40,6 +40,8 @@
   const FS_PANEL_MIN_SCALE = 0.8;
   const FS_PANEL_MAX_SCALE = 1.8;
   const FS_PANEL_SCALE_STEP = 0.1;
+  const NOTE_RENDER_FUTURE_BUFFER_SECONDS = 0.7;
+  const NOTE_RENDER_MAX_TRAIL_SECONDS = 10;
   const DESKTOP_DOWNLOADS = {
     windows: "https://github.com/memofrezzo/SheetMusic-to-PianoTutorial/releases/latest/download/PianoRollLocal-Windows-Setup.exe",
     mac: "https://github.com/memofrezzo/SheetMusic-to-PianoTutorial/releases/latest/download/PianoRollLocal-macOS.dmg",
@@ -49,22 +51,22 @@
   // Fallback si melodias.json no existe o no carga.
   const DEFAULT_MELODIES = [
     {
-      id: "legends-never-die-no-voice",
-      label: "Legends Never Die No Voice",
-      scorePaths: ["Partituras/Legends Never Die No Voice.musicxml"],
-      audioPaths: ["Musicas/Legends Never Die No Voice.mp3"]
-    },
-    {
       id: "legends-never-die-voice",
       label: "Legends Never Die Voice",
       scorePaths: ["Partituras/Legends Never Die.musicxml"],
       audioPaths: ["Musicas/Legends Never Die.mp3"]
     },
     {
-      id: "fotografia-la-plata",
-      label: "Fotografia La Plata",
-      scorePaths: ["Partituras/Fotografia La Plata.musicxml"],
-      audioPaths: ["Musicas/Fotografia La Plata.mp3"]
+      id: "nel-cor-piu-non-mi-sento-no-voice",
+      label: "nel-cor-piu-non-mi-sento-no voice",
+      scorePaths: ["Partituras/nel-cor-piu-non-mi-sento-no voice.musicxml"],
+      audioPaths: ["Musicas/nel-cor-piu-non-mi-sento-no voice.mp3"]
+    },
+    {
+      id: "o-cessate-di-piagarmi-no-voice",
+      label: "o-cessate-di-piagarmi-no voice",
+      scorePaths: ["Partituras/o-cessate-di-piagarmi-no voice.musicxml"],
+      audioPaths: ["Musicas/o-cessate-di-piagarmi-no voice.mp3"]
     },
     {
       id: "epic-piano-music",
@@ -79,6 +81,7 @@
     defaultMelodies: DEFAULT_MELODIES.slice(),
     notes: [],
     totalDuration: 0,
+    maxNoteDuration: 0,
     playhead: 0,
     isPlaying: false,
     sourceName: "",
@@ -1580,7 +1583,7 @@
   function rebuildPianoLayout() {
     const cssWidth = Math.max(320, ui.stageWrap.clientWidth);
     const cssHeight = Math.max(320, ui.canvas.clientHeight || Math.min(window.innerHeight * 0.72, 680));
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     state.renderWidth = cssWidth;
     state.renderHeight = cssHeight;
 
@@ -1666,12 +1669,12 @@
 
     ctx.strokeStyle = "rgba(255,255,255,0.07)";
     ctx.lineWidth = 1;
+    ctx.beginPath();
     for (const key of state.piano.whiteKeys) {
-      ctx.beginPath();
       ctx.moveTo(key.x, 0);
       ctx.lineTo(key.x, keyboardTop);
-      ctx.stroke();
     }
+    ctx.stroke();
 
     const firstSecond = Math.floor(currentTime);
     for (let s = firstSecond; s < currentTime + state.lookAheadSeconds + 2; s += 1) {
@@ -1704,8 +1707,9 @@
       return;
     }
 
-    const windowStart = Math.max(0, currentTime - 10);
-    const windowEnd = currentTime + state.lookAheadSeconds + 8;
+    const trailSeconds = Math.min(NOTE_RENDER_MAX_TRAIL_SECONDS, Math.max(1.2, state.maxNoteDuration + 0.2));
+    const windowStart = Math.max(0, currentTime - trailSeconds);
+    const windowEnd = currentTime + state.lookAheadSeconds + NOTE_RENDER_FUTURE_BUFFER_SECONDS;
 
     let lo = 0;
     let hi = state.notes.length - 1;
@@ -1765,6 +1769,12 @@
     const safeRadius = Math.max(0, Math.min(radius, width * 0.5, height * 0.5));
     if (safeRadius <= 0) {
       ctx.fillRect(x, y, width, height);
+      return;
+    }
+    if (typeof ctx.roundRect === "function") {
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, safeRadius);
+      ctx.fill();
       return;
     }
 
@@ -1988,6 +1998,17 @@
     return maxEnd;
   }
 
+  function computeMaxNoteDuration(notes) {
+    let maxDuration = 0;
+    for (const n of notes) {
+      const duration = n.end - n.start;
+      if (duration > maxDuration) {
+        maxDuration = duration;
+      }
+    }
+    return maxDuration;
+  }
+
   async function loadScoreFile(file) {
     if (!file) {
       return;
@@ -2016,6 +2037,7 @@
 
     state.notes = parsed.notes;
     state.totalDuration = computeDuration(parsed.notes);
+    state.maxNoteDuration = computeMaxNoteDuration(parsed.notes);
     state.playhead = 0;
     state.playheadAtStart = 0;
     state.isPlaying = false;

@@ -17,7 +17,7 @@ https://memofrezzo.github.io/SheetMusic-to-PianoTutorial/
 - Las notas en teclas negras se dibujan mas oscuras y sin transparencia.
 - Resalta teclas activas con el mismo color de la nota que esta cayendo.
 - Permite reproducir un audio externo (`.mp3`/`.wav`) sincronizado con la animacion.
-- Incluye **Melodias por defecto** que cargan automaticamente partitura + audio al hacer click (`Legends Never Die no Voice`, `Legends Never Die Voice`, `Fotografia La Plata`, `Epic Piano Music`).
+- Incluye **Melodias por defecto** que cargan automaticamente partitura + audio al hacer click (`Legends Never Die Voice`, `nel-cor-piu-non-mi-sento-no voice`, `o-cessate-di-piagarmi-no voice`, `Epic Piano Music`).
 - Las melodias por defecto se leen desde `melodias.json` (rutas explicitas, ideal para evitar problemas de mayusculas/minusculas en web).
 - En app de escritorio (Electron) tambien funcionan las melodias por defecto incluidas en `Musicas/` y `Partituras/`.
 - Incluye controles: **Reproducir**, **Pausar**, **Reiniciar** y carga de archivos.
